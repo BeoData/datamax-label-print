@@ -1,14 +1,30 @@
 VERSION 5.00
 Begin VB.Form Form1 
    Caption         =   "MILENIUM PRINT"
-   ClientHeight    =   3735
+   ClientHeight    =   7995
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   10305
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3735
+   ScaleHeight     =   7995
    ScaleWidth      =   10305
    StartUpPosition =   3  'Windows Default
+   Begin VB.PictureBox picBarCode 
+      Appearance      =   0  'Flat
+      AutoRedraw      =   -1  'True
+      BackColor       =   &H80000005&
+      BorderStyle     =   0  'None
+      ForeColor       =   &H80000008&
+      Height          =   600
+      Left            =   600
+      ScaleHeight     =   40
+      ScaleMode       =   3  'Pixel
+      ScaleWidth      =   145
+      TabIndex        =   8
+      Top             =   4800
+      Visible         =   0   'False
+      Width           =   2175
+   End
    Begin VB.TextBox Text3 
       Height          =   500
       Left            =   2040
@@ -87,6 +103,25 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+ Option Explicit
+
+Private Function GenerateCode128(Str As String, XPos As Single, YPos As Single, Optional BarWidth As Integer = 1) As Single
+    Dim Code128 As New clsCode128
+    Dim BarCodeWidth As Long
+    
+    Me.picBarCode.Cls
+    Me.picBarCode.Width = 1
+    BarCodeWidth = Code128.Code128_Print(Str, Me.picBarCode, BarWidth, True)
+    Me.PaintPicture Me.picBarCode.Image, XPos, YPos, Me.picBarCode.ScaleWidth, Me.picBarCode.ScaleHeight, 0, 0, Me.picBarCode.ScaleWidth, Me.picBarCode.ScaleHeight
+    
+    Me.CurrentX = XPos + BarCodeWidth / 2 - Me.TextWidth(Str) / 2
+    Me.CurrentY = YPos + Me.picBarCode.ScaleHeight + 2
+    Me.Print Str
+    
+    GenerateCode128 = Me.CurrentY
+End Function
+
+
 Private Sub Command1_Click()
 Printer.FontName = "Helv"
  ' velicina fonta Printer.FontSize = "12"
@@ -118,7 +153,8 @@ Printer.FontName = "IDAHC39M Code 39 Barcode"
  
   Printer.CurrentY = 450 '2 inches (row position)
  Printer.CurrentX = 3000
- 
+
+
 Printer.FontName = "IDAHC39M Code 39 Barcode"
  
  'Printer.Print "IME FIRME 123456"
@@ -139,9 +175,13 @@ Printer.FontName = "helv"
 ' Printer.Print "Neki naziv"
  
  Printer.EndDoc
-End Sub
+End Function
 
 Private Sub Form_Load()
+Dim YPos As Single
+
+YPos = GenerateCode128("0123456789", 1, YPos + 1, 1)
+
 Label1.Caption = Text2.Text
 End Sub
 
